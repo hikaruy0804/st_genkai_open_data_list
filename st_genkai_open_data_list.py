@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 import streamlit as st
 import requests
 import pandas as pd
@@ -15,12 +16,18 @@ def serach_genkai():
     address = []
     ido = []
     keido = []
-
     res = requests.get(url)
     data = res.json()
     data = data['result']['records']
     for data in data:
-        place.append(data['名称'])
+        try:
+            place.append(data['名称'])
+        except KeyError:
+            place.append(data['介護サービス事業所名称'])
+        # if data['名称']:
+        #     place.append(data['名称'])
+        # else:
+        #     place.append(data['介護サービス事業名称'])
         address.append(data['住所']) 
         ido.append(data['緯度'])
         keido.append(data['経度'])
@@ -28,6 +35,7 @@ def serach_genkai():
         df_address = pd.DataFrame(address,columns=['住所'])
         df_ido =  pd.DataFrame(ido,columns=['緯度'])
         df_keido =  pd.DataFrame(keido,columns=['経度'])
+        
     df_info = pd.concat([df_place, df_address, df_ido, df_keido], axis='columns')
     st.dataframe(df_info.iloc[:,:2])
     
